@@ -1,0 +1,25 @@
+{
+  "name": "aurora-lang",
+  "displayName": "Aurora Language",
+  "description": "Official support for the Aurora language: The power of Rust with the simplicity of Python.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.110.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "aurora",
+      "aliases": ["Aurora", "aurora"],
+      "extensions": [".au"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "aurora",
+      "scopeName": "source.aurora",
+      "path": "./syntaxes/aurora.tmLanguage.json"
+    }]
+  }
+}

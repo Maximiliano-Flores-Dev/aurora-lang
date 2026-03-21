@@ -1,0 +1,12 @@
+[package]
+name = "aurora-lang"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Para el Parser de la sintaxis Pythonic
+nom = "7.1" 
+# Para generar el código binario real
+inkwell = { version = "0.2", features = ["llvm15-0"] }
+# Para mensajes de error bonitos y humanos
+miette = { version = "5.0", features = ["fancy"] }
