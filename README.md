@@ -14,16 +14,17 @@ Aurora is a **next-generation, context-aware** programming language built for lo
 
 This is how a system initialization file looks in Aurora:
 
-```python
+```
 from wrtr import os, user
 
-# Initial Kernel Configuration
+# --- Initial Kernel Configuration ---
 Set os.type as "Mixed"
 Set user.name as "admin"
 Set user.permissions as ["root"]
 
-# Launching Master Services
+# --- Launching Master Services ---
 Start os.services
+```
 🛠️ Requirements
 To fully experience Aurora, we recommend:
 
