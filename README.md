@@ -1,65 +1,55 @@
-# aurora-lang README
+# 🌌 Aurora Programming Language
+> **The Power of Rust. The Simplicity of Python. The Soul of a System.**
 
-This is the README for your extension "aurora-lang". After writing up a brief description, we recommend including the following sections.
+Aurora is a **next-generation, context-aware** programming language built for low-level system development without the traditional cognitive overhead. By leveraging a **Contextual Semantics** engine, Aurora adapts its behavior based on the imported libraries, allowing for high-quality system code with minimal syntax.
 
-## Features
+## ✨ Key Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+* **🎨 Boreal Syntax:** A visual-first design inspired by Python’s clarity, optimized for human-readable system instructions.
+* **🧠 Contextual Intelligence:** Keyword meanings (like `Set` or `Start`) evolve dynamically based on the active context (Kernel, User, or Hardware).
+* **🛡️ Rust-Powered Safety:** All Aurora source code is processed by a dedicated Rust engine, ensuring memory safety and extreme performance.
+* **🔌 Native WRTR Integration:** Out-of-the-box support for the WRTR Master Library for system services and memory management.
 
-For example if there is an image subfolder under your extension project workspace:
+## 🚀 Syntax Preview
 
-\!\[feature X\]\(images/feature-x.png\)
+This is how a system initialization file looks in Aurora:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+```python
+from wrtr import os, user
 
-## Requirements
+# Initial Kernel Configuration
+Set os.type as "Mixed"
+Set user.name as "admin"
+Set user.permissions as ["root"]
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+# Launching Master Services
+Start os.services
+🛠️ Requirements
+To fully experience Aurora, we recommend:
 
-## Extension Settings
+Rust & Cargo: The backend engine that compiles Aurora code.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Aurora Extension: (This extension) for .au file syntax highlighting.
 
-For example:
-
+⚙️ Extension Settings
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+aurora.compiler.path: Define the path to your aurora-compiler binary.
 
-## Known Issues
+aurora.formatOnSave: Enable auto-formatting to keep indentation perfect.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+⚠️ Known Issues
+Syntax highlighting is currently optimized for Dark Themes.
 
-## Release Notes
+Advanced IntelliSense (auto-completion) is under active development.
 
-Users appreciate release notes as you update your extension.
+📜 Release Notes
+0.1.0 (Initial Alpha)
+Official launch of the Aurora Grammar.
 
-### 1.0.0
+Support for .au file extensions.
 
-Initial release of ...
+Integration of the official Boreal Gradient logo.
 
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Developed with ❤️ by Maximiliano Flores
+Built on Rust infrastructure and Pythonic elegance.
