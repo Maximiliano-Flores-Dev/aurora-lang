@@ -59,8 +59,7 @@ with memory:
                 if event.code == 0x1C:
                         return "Enter Pressed"
 
-                        Assign handle_keyboard_interrupt to hardware.irq[1]
-                        ```
+                        Assign handle_keyboard_interrupt to hardware.irq[1]```
                         🛠️ Requirements
                         To fully experience Aurora's ecosystem:
                         Rust & Cargo: Required to build the aurora-c compiler from source.
