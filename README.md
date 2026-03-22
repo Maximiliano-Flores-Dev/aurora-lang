@@ -29,7 +29,7 @@ At the heart of Aurora is the **WRTR Master Library**. Instead of directly manip
 ### 1. Basic Initialization (OS Level)
 # Initializing kernel parameters is straightforward and declarative.
 
-```python
+```markdown
 from wrtr import os, user
 
 # --- Initial Kernel Configuration ---
