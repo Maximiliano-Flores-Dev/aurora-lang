@@ -1,0 +1,16 @@
+# Directorios de compilación de Rust
+/target/
+**/*.rs.bk
+
+# Archivos intermedios generados por el transpilador
+kernel_output.rs
+aurora_kernel.bin
+
+# Archivos de sistema operativo finales e ISOs
+iso_root/
+*.iso
+*.bin
+
+# Archivos del sistema local
+.DS_Store
+Thumbs.db
