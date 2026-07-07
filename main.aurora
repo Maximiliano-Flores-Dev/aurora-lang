@@ -1,42 +1,27 @@
-from WRITER import OS
+From WRITER import OS
 
 kernel_type: {
     "display_name": "Aurora",
     "version": "1.00.00",
     "target": "mobile-arm64",
-    "output_format": "iso",
-
+    "output_format": "raw_binary",
     "security": {
         "telemetry": false,
         "privacy_mode": "strict",
         "sandbox_apps": true
-    },
-
-    "hardware_config": {
-        "memory_management": "local-direct",
-        "heap_size_mb": 1024,
-        "allow_always_on_listening": false
-    },
-
-    "on_boot": fn():
-        OS.display.init_screen()
-        OS.display.clear(color="black")
-        OS.display.show_log("Aurora OS [V1.00.00] - Cargando modulos de soberania...")
-
-        OS.storage.mount_secure_partition(mount_point="/root", encryption="AES-256-GCM-OnDevice")
-        OS.display.show_log("Sistema de archivos local montado con exito.")
-
-        OS.kernel.start_scheduler()
-        OS.display.show_log("Planificador en tiempo real activo.")
-
-        OS.hardware.bind_physical_button(
-            pin=4, 
-            duration_ms=3500, 
-            trigger_event=OS.agents.claw.awaken
-        )
-        OS.display.show_log("Modulo 'Claw' asignado al boton fisico (Activacion por pulsacion 3.5s).")
-
-        OS.display.show_log("Cargando interfaz de usuario vanilla...")
-        OS.ui.launch_desktop_environment()
+    }
 }
 
+"on_boot": fn():
+    OS.display.init_screen()
+    OS.display.clear(color="black")
+    OS.display.show_log("Aurora OS [V1.00.00] - Cargando modulos de soberania...")
+    OS.display.draw_boot_pattern()
+    OS.storage.mount_secure_partition(mount_point="/root", encryption="AES-256-GCM")
+    OS.display.show_log("Sistema de archivos local montado con exito.")
+    OS.kernel.start_scheduler()
+    OS.display.show_log("Planificador en tiempo real activo.")
+    OS.hardware.bind_physical_button(pin=4, duration_ms=3500, trigger_event=OS.agents.claw.awaken)
+    OS.display.show_log("Modulo 'Claw' asignado al boton fisico (Activacion por pulsacion 3.5s).")
+    OS.display.show_log("Cargando interfaz de usuario vanilla...")
+    OS.ui.launch_desktop_environment()
