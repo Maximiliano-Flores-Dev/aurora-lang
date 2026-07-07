@@ -1,82 +1,106 @@
-pub mod storage;
-pub mod display;
-pub mod kernel;
-
 use crate::config::KernelConfig;
-use crate::parser::tokenizer::AuroraCommand;
+use crate::parser::ast::{Stmt, Expr, Literal};
 
-pub fn orchestrate_codegen(config: &KernelConfig, commands: &[AuroraCommand]) -> String {
-    let mut rust_code = String::new();
+pub fn orchestrate_codegen(config: &KernelConfig, ast_tree: &[Stmt]) -> String {
+    let mut code = String::new();
+
+    // 1. Cabecera Bare-Metal Soberana
+    code.push_str("#![no_std]\n#![no_main]\n\n");
+    code.push_str("use core::panic::PanicInfo;\n\n");
     
-    rust_code.push_str("// Código modular de Aurora OS Compiler\n");
-    rust_code.push_str("#![no_std]\n");
-    rust_code.push_str("#![no_main]\n\n");
-    rust_code.push_str("use core::panic::PanicInfo;\n\n");
-    rust_code.push_str(&format!("// Config Target: {}, Versión: {}\n\n", config.target, config.version));
+    // 2. Metadatos del Kernel inyectados
+    code.push_str(&format!("// 🌌 KERNEL CONFIG: {}\n", config.display_name));
+    code.push_str(&format!("// TARGET ARCH: {}\n\n", config.target));
 
-    // Runtime básico de interrupciones y memoria
-    rust_code.push_str("#[no_mangle]\n");
-    rust_code.push_str("pub unsafe extern \"C\" fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32 {\n");
-    rust_code.push_str("    for i in 0..n {\n");
-    rust_code.push_str("        let a = *s1.add(i); let b = *s2.add(i);\n");
-    rust_code.push_str("        if a != b { return (a as i32) - (b as i32); }\n");
-    rust_code.push_str("    }\n");
-    rust_code.push_str("    0\n");
-    rust_code.push_str("}\n\n");
-    rust_code.push_str("#[no_mangle]\npub extern \"C\" fn rust_eh_personality() {}\n\n");
-
-    rust_code.push_str("#[allow(non_snake_case)]\n");
-    rust_code.push_str("pub mod writer_core {\n");
-    rust_code.push_str("    pub mod os {\n");
-    rust_code.push_str("        pub mod OS {\n");
-
-    // Inyectamos dinámicamente desde los archivos independientes del Kernel
-    rust_code.push_str(&display::generate());
-    rust_code.push_str(&storage::generate());
-    rust_code.push_str(&kernel::generate());
-
-    // HARDWARE, AGENTS stubs provisionales
-    rust_code.push_str("            pub mod hardware {\n");
-    rust_code.push_str("                pub unsafe fn bind_physical_button(_pin: i32, _duration_ms: i32, _trigger_event: unsafe fn()) {}\n");
-    rust_code.push_str("            }\n");
-    rust_code.push_str("            pub mod agents {\n");
-    rust_code.push_str("                pub mod claw { pub unsafe fn awaken() {} }\n");
-    rust_code.push_str("                pub mod rose { pub unsafe fn awaken() {} }\n");
-    rust_code.push_str("            }\n");
-    rust_code.push_str("            pub mod ui {\n");
-    rust_code.push_str("                pub unsafe fn launch_desktop_environment() {}\n");
-    rust_code.push_str("            }\n");
-
-    rust_code.push_str("        }\n");
-    rust_code.push_str("    }\n");
-    rust_code.push_str("}\n\n");
-    rust_code.push_str("use writer_core::os::OS;\n\n");
-
-    // Bloque _start entry point basado en el AST del Tokenizer
-    rust_code.push_str("#[no_mangle]\npub extern \"C\" fn _start() -> ! {\n    unsafe {\n");
-
-    for cmd in commands {
-        let mut rust_args = String::new();
-        for (i, arg) in cmd.args.iter().enumerate() {
-            if i > 0 { rust_args.push_str(", "); }
-            
-            // Si el argumento es una referencia a una función u objeto que empieza con "OS.",
-            // transpilamos sus puntos (.) a dobles puntos (::) para que Rust lo entienda.
-            if arg.starts_with("OS.") {
-                rust_args.push_str(&arg.replace(".", "::"));
-            } else {
-                rust_args.push_str(arg);
-            }
-        }
-        
-        rust_code.push_str(&format!(
-            "        OS::{}::{}({});\n",
-            cmd.module, cmd.function, rust_args
-        ));
+    // 3. Mock Estructural en Rust Puro (Tolerante a cualquier firma)
+    code.push_str(r#"
+#[allow(dead_code, non_camel_case_types, non_snake_case, unused_variables)]
+pub mod OS {
+    pub mod display {
+        pub fn init_screen() {}
+        pub fn clear(color: &str) {}
+        pub fn show_log(msg: &str) {}
+        pub fn draw_boot_pattern() {}
     }
 
-    rust_code.push_str("    }\n    loop {}\n}\n\n");
-    rust_code.push_str("#[panic_handler]\nfn panic(_info: &PanicInfo) -> ! { loop {} }\n");
+    pub mod storage {
+        pub fn mount_secure_partition(args: &str) {}
+    }
 
-    rust_code
+    pub mod hardware {
+        pub fn bind_physical_button(args: &str) {}
+    }
+
+    pub mod kernel {
+        pub fn start_scheduler() {}
+    }
+
+    pub mod ui {
+        pub fn launch_desktop_environment() {}
+    }
+
+    pub mod agents {
+        pub fn claw() {}
+    }
+}
+"#);
+
+    // 4. Punto de Entrada Principal (Corregido a un solo `#`)
+    code.push_str("#[no_mangle]\npub extern \"C\" fn kernel_main() -> ! {\n");
+    code.push_str("    // Inicializaciones automáticas generadas por el árbol sintáctico\n");
+    
+    // 5. Transpilar el AST real línea por línea
+    for stmt in ast_tree {
+        code.push_str(&format!("    {};\n", transpile_statement(stmt)));
+    }
+
+    code.push_str("\n    loop { core::hint::spin_loop(); }\n}\n\n");
+
+    // 6. Panic Handler obligatorio
+    code.push_str("#[panic_handler]\nfn panic(_info: &PanicInfo) -> ! {\n    loop {}\n}\n");
+
+    code
+}
+
+fn transpile_statement(stmt: &Stmt) -> String {
+    match stmt {
+        Stmt::VarDeclaration { name, value_type: _, value } => {
+            format!("let {} = {}", name, transpile_expression(value))
+        }
+        Stmt::Expression(expr) => transpile_expression(expr),
+        Stmt::IfStatement { condition, then_branch, else_branch } => {
+            let mut if_code = format!("if {} {{\n", transpile_expression(condition));
+            for s in then_branch {
+                if_code.push_str(&format!("        {};\n", transpile_statement(s)));
+            }
+            if let Some(else_s) = else_branch {
+                if_code.push_str("    } else {\n");
+                for s in else_s {
+                    if_code.push_str(&format!("        {};\n", transpile_statement(s)));
+                }
+            }
+            if_code.push_str("    }");
+            if_code
+        }
+    }
+}
+
+fn transpile_expression(expr: &Expr) -> String {
+    match expr {
+        Expr::Literal(Literal::String(s)) => format!("\"{}\"", s),
+        Expr::Literal(Literal::Int(i)) => i.to_string(),
+        Expr::Literal(Literal::Bool(b)) => b.to_string(),
+        Expr::Variable(v) => v.clone(),
+        Expr::SysCall { module, submodule, action, args } => {
+            let mut arg_strs = Vec::new();
+            for (_, val) in args {
+                arg_strs.push(transpile_expression(val));
+            }
+            if arg_strs.is_empty() {
+                format!("{}::{}::{}()", module, submodule, action)
+            } else {
+                format!("{}::{}::{}({})", module, submodule, action, arg_strs.join(", "))
+            }
+        }
+    }
 }

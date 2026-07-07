@@ -6,38 +6,43 @@ mod build_pipeline;
 use std::fs;
 
 fn main() {
-    println!("=== AURORA COMPILER CORE (PIPELINE INTEGRADO) ===");
+    println!("=== AURORA COMPILER CORE (PROCESAMIENTO AST COMPLETO) ===");
 
-    // Apuntamos quirúrgicamente a la nueva ubicación en EXAMPLES
     let aurora_file = "../EXAMPLES/boot_test.aurora";
 
     match fs::read_to_string(aurora_file) {
         Ok(content) => {
-            println!("[Local-Read] Archivo '{}' cargado.", aurora_file);
-
+            // 1. Parsear los Metadatos del archivo de configuración nativo
             match config::parse_kernel_config(&content) {
                 Ok(config) => {
-                    println!("[Parser Éxito] Configuración de '{}' validada.", config.display_name);
+                    println!("[Config] Cargados metadatos del Kernel: {}", config.display_name);
 
-                    let commands = parser::tokenizer::tokenize_boot_block(&content);
-                    println!("[Análisis Sintáctico] {} comandos extraídos del bloque on_boot.", commands.len());
+                    // 2. EXTRAER EL AST REAL DESDE EL CÓDIGO FUENTE (¡Adiós simulación!)
+                    println!("[Parser] Analizando el código fuente de Aurora dinámicamente...");
+                    let real_ast = parser::parse_source_code(&content);
+                    
+                    println!("[AST Éxito] Se estructuraron dinámicamente {} nodos sintácticos desde el archivo.", real_ast.len());
 
-                    let generated_rust = codegen::orchestrate_codegen(&config, &commands);
+                    if real_ast.is_empty() {
+                        println!("[Alerta] No se encontraron comandos válidos dentro del bloque 'on_boot'.");
+                    }
 
+                    // 3. Orquestar la generación de código Rust bare-metal
+                    let generated_rust = codegen::orchestrate_codegen(&config, &real_ast);
+
+                    // 4. Guardar la salida transpilada
                     if let Err(e) = fs::write("kernel_output.rs", &generated_rust) {
-                        println!("[Error Escritura] No se pudo guardar kernel_output.rs: {}", e);
+                        println!("[Error] No se pudo escribir kernel_output.rs: {}", e);
                         return;
                     }
-                    println!("[Escritura Local] Transpilación modular completada.");
+                    println!("[Codegen] Código intermedio unificado en 'kernel_output.rs'.");
 
-                    println!("[Orquestador] Compilando binario base ELF...");
+                    // 5. Compilar el ejecutable final del OS
                     build_pipeline::compile_elf_binary();
                 }
                 Err(e) => println!("[Error Config] {}", e),
             }
         }
-        Err(_) => {
-            println!("[Error Crítico] No se pudo encontrar el archivo '{}'. Asegúrate de que exista.", aurora_file);
-        }
+        Err(_) => println!("[Error Crítico] No se encontró el archivo origen '{}'.", aurora_file),
     }
 }

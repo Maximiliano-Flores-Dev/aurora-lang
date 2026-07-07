@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use serde_json::Value;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct KernelConfig {
@@ -10,24 +9,49 @@ pub struct KernelConfig {
 }
 
 pub fn parse_kernel_config(raw_content: &str) -> Result<KernelConfig, String> {
-    // Buscar el bloque kernel_type: { ... }
-    if let Some(start_idx) = raw_content.find("kernel_type: {") {
-        let block_content = &raw_content[start_idx + "kernel_type:".len()..];
-        if let Some(end_idx) = block_content.find('}') {
-            let json_str = &block_content[..end_idx + 1];
-            
-            // Reemplazar comillas tipográficas o formatos si existieran y deserializar
-            let config: KernelConfig = serde_json::from_str(json_str)
-                .map_err(|e| format!("Error parseando configuración JSON: {}", e))?;
-            return Ok(config);
+    // Valores por defecto soberanos por si no se definen explícitamente
+    let mut display_name = "Aurora".to_string();
+    let mut version = "1.00.00".to_string();
+    let mut target = "mobile-arm64".to_string();
+    let mut output_format = "raw_binary".to_string();
+
+    let mut inside_config = false;
+
+    // Procesamos el script .aurora de manera flexible y tolerante a espacios y saltos de línea
+    for line in raw_content.lines() {
+        let trimmed = line.trim();
+        
+        if trimmed.starts_with("kernel_type:") {
+            inside_config = true;
+            continue;
+        }
+
+        if inside_config {
+            if trimmed.starts_with('}') {
+                break; // El bloque de configuración terminó de forma segura
+            }
+
+            // Sanitizamos la línea quitando comillas de cadenas y comas residuales
+            let clean_line = trimmed.replace('"', "").replace('\'', "").replace(',', "");
+            if let Some((key, val)) = clean_line.split_once(':') {
+                let k = key.trim();
+                let v = val.trim();
+
+                match k {
+                    "display_name" => display_name = v.to_string(),
+                    "version" => version = v.to_string(),
+                    "target" => target = v.to_string(),
+                    "output_format" => output_format = v.to_string(),
+                    _ => {} // Ignoramos sub-bloques como 'security' por ahora para evitar quiebres
+                }
+            }
         }
     }
-    
-    // Fallback provisional si no encuentra la estructura exacta en desarrollo
+
     Ok(KernelConfig {
-        display_name: "Aurora OS".to_string(),
-        version: "1.0.0".to_string(),
-        target: "mobile-arm64".to_string(),
-        output_format: "raw_binary".to_string(),
+        display_name,
+        version,
+        target,
+        output_format,
     })
 }

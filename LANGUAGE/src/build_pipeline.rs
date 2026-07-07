@@ -4,7 +4,7 @@ use std::fs;
 pub fn compile_elf_binary() {
     println!("[Pipeline] Generando binario base...");
 
-    // Escribimos un wrapper Cargo temporal para el código de bajo nivel transpilado
+    // Escribimos un wrapper Cargo temporal para mantener compatibilidad si se escala
     let cargo_toml_kernel = r#"
 [package]
 name = "kernel_output"
@@ -16,15 +16,23 @@ edition = "2021"
 
     fs::write("Cargo.toml.tmp", cargo_toml_kernel).unwrap();
 
-    // Invocar la compilación del kernel_output generado
+    // Invocar rustc rompiendo las cadenas del enlazador del sistema operativo anfitrión
     let status = Command::new("rustc")
         .arg("--crate-type=bin")
         .arg("--edition=2021")
         .arg("-C")
         .arg("opt-level=2")
+        .arg("-C")
+        .arg("panic=abort")
+        // 💥 BANDERAS MAESTRAS DE ENLAZADO BARE-METAL:
+        // Evita que el enlazador de Termux inyecte los archivos de inicio de Android/Linux (C Runtime)
+        .arg("-C")
+        .arg("link-arg=-nostartfiles")
+        .arg("-C")
+        .arg("link-arg=-nodefaultlibs")
         .arg("kernel_output.rs")
         .arg("-o")
-        .arg("../OS/aurora_kernel.elf") // El binario final resultante viaja directo a la carpeta OS
+        .arg("../OS/aurora_kernel.elf")
         .status();
 
     match status {
@@ -38,6 +46,6 @@ edition = "2021"
         }
     }
     
-    // Limpieza de temporales
+    // Limpieza de archivos temporales
     let _ = fs::remove_file("Cargo.toml.tmp");
 }
