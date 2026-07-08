@@ -1,0 +1,10 @@
+[package]
+name = "open_lily_lang"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Agregaremos dependencias aquí solo si necesitamos parsing complejo o estructuras de datos avanzadas
+
