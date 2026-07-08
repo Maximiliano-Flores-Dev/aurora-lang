@@ -1,0 +1,35 @@
+// main.oly - Configuración de Open Lily
+From WRITER import OS 
+
+kernel_type: { 
+    "display_name": "Open Lily", 
+    "version": "1.00.00", 
+    "target": "mobile-arm64", 
+    "output_format": "raw_binary", 
+    "security": { 
+        "telemetry": false, 
+        "privacy_mode": "strict", 
+        "sandbox_apps": true 
+    } 
+}
+
+"on_boot": fn(): {
+    OS.display.init_screen()
+    OS.display.clear(color="black")
+    OS.display.show_log("Open Lily OS [V1.00.00] - Cargando módulos de soberanía...")
+    
+    OS.display.draw_boot_pattern()
+    
+    OS.storage.mount_secure_partition(mount_point="/root", encryption="AES-256-GCM")
+    OS.display.show_log("Sistema de archivos local montado con éxito.")
+    
+    OS.kernel.start_scheduler()
+    OS.display.show_log("Planificador en tiempo real activo.")
+    
+    // Rose es quien se activa para la gestión inteligente del sistema
+    OS.hardware.bind_physical_button(pin=4, duration_ms=3500, trigger_event=OS.agents.rose.awaken)
+    OS.display.show_log("Módulo 'Rose' asignado al botón físico.")
+    
+    OS.ui.launch_desktop_environment()
+}
+
